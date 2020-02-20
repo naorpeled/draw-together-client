@@ -23,6 +23,17 @@ export default class Whiteboard extends Component {
             socket.emit('onClientConnect', this.context.name);
         });
 
+        socket.on('initialCanvasLoad', (canvas) => {
+            if(canvas == null) return;
+            const ctx = this.canvas.current.getContext("2d");
+            let imageObj = new Image();
+            
+            imageObj.src = canvas;
+            imageObj.onload = function() {
+              ctx.drawImage(this, 0, 0);
+            };
+        });
+
         socket.on('disconnect', () => {
             console.log('Disconnected');
             socket.emit('onClientDisconnect', this.context.name);
@@ -46,7 +57,7 @@ export default class Whiteboard extends Component {
         socket.on('onClientConnect', (users) => {
             this.setState({users: [...users]})
         });
-        
+
         socket.on('onClientDisconnect', (users) => {
             this.setState({users: [...users]})
         });
@@ -55,22 +66,13 @@ export default class Whiteboard extends Component {
     draw = (e) => {
         socket.emit('onDraw', {
             x: e.clientX,
-            y: e.clientY
+            y: e.clientY,
+            canvas: [this.canvas.current.toDataURL("image/png")]
         });
-
-        const context = this.canvas.current.getContext("2d")
-        context.beginPath();
-        context.arc(e.clientX, e.clientY, 7.5, 0, Math.PI * 2, false);
-        context.fill();
-        context.lineWidth = 5;
-        context.strokeStyle = "#00000";
-        context.stroke();
     }
 
     clearCanvas = () => {
         socket.emit('onCanvasClear');
-        const ref = this.canvas.current;
-        ref.getContext("2d").clearRect(0, 0, ref.width, ref.height);
     }
     
     render() {
