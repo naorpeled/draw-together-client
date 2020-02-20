@@ -83,13 +83,18 @@ export default class Whiteboard extends Component {
                     <canvas
                         onMouseMove={(e) => {
                             if(this.state.drawing) {
-                                this.draw(e)
+                                this.draw(e);
                             }
                         }}
                         onMouseDown={() =>  this.setState({drawing: true})}
                         onMouseUp={() =>  this.setState({drawing: false})}
+                        onMouseLeave={() => {this.setState({drawing: false})}}
                         onClick={(e) => this.draw(e)}
-                        onContextMenu={(e) => e.preventDefault()}
+                        onContextMenu={(e) => {
+                            e.preventDefault();
+                            this.draw(e);
+                        }}
+                        
                         ref={this.canvas}
                         
                         ></canvas>
