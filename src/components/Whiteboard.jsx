@@ -13,7 +13,8 @@ export default class Whiteboard extends Component {
         socket = io('http://localhost:8000');
         this.canvas = React.createRef();
         this.state = {
-            users: []
+            users: [],
+            drawing: false
         }
     }
 
@@ -79,9 +80,22 @@ export default class Whiteboard extends Component {
         return (
             <div className="game">
                 <Fragment>
-                    <canvas onMouseMove={(e) => this.draw(e)} ref={this.canvas}></canvas>
+                    <canvas
+                        onMouseMove={(e) => {
+                            if(this.state.drawing) {
+                                this.draw(e)
+                            }
+                        }}
+                        onMouseDown={() =>  this.setState({drawing: true})}
+                        onMouseUp={() =>  this.setState({drawing: false})}
+                        onClick={(e) => this.draw(e)}
+                        onContextMenu={(e) => e.preventDefault()}
+                        ref={this.canvas}
+                        
+                        ></canvas>
+                    
                     <button onClick={() => this.clearCanvas()}>Clear</button>
-                    <h2>Users:</h2>
+                    <h2>Users:</h2> 
                     <ul>{this.state.users.map((user, index) => <li key={'user'+index}>{user}</li>)}</ul>
                 </Fragment>
             </div>
