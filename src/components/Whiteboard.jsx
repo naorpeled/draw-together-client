@@ -56,6 +56,7 @@ export default class GameScreen extends Component {
         const ref = this.canvas.current;
         ref.getContext("2d").clearRect(0, 0, ref.width, ref.height);
     }
+    
     render() {
         return (
             <div className="game">

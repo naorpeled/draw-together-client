@@ -16,7 +16,7 @@ export default class Welcome extends Component {
                     {(context) => (
                         <form>
                             <input type="text" name="name" value={context.name} onChange={(e) => context.setName(e.target.value)} placeholder="name"/>
-                            <button type="submit" onClick={context.toggleInGame}>Join Session</button>
+                            <button type="submit" onClick={context.toggleShowBoard}>Join Session</button>
                         </form>
                     )}
                 </AppContext.Consumer>
