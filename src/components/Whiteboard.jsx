@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import AppContext from '../context/AppContext'
 import io from 'socket.io-client';
+import '../styles/global.css';
 
 let socket;
     
@@ -14,7 +15,8 @@ export default class Whiteboard extends Component {
         this.canvas = React.createRef();
         this.state = {
             users: [],
-            drawing: false
+            drawing: false,
+            color: 'black'
         }
     }
 
@@ -37,6 +39,8 @@ export default class Whiteboard extends Component {
 
         socket.on('disconnect', () => {
             console.log('Disconnected');
+            const ref = this.canvas.current;
+            ref.getContext("2d").clearRect(0, 0, ref.width, ref.height);
             socket.emit('onClientDisconnect', this.context.name);
         });
 
@@ -44,9 +48,10 @@ export default class Whiteboard extends Component {
             const context = this.canvas.current.getContext("2d")
             context.beginPath();
             context.arc(data.x, data.y, 7.5, 0, Math.PI * 2, false);
-            context.fill();
             context.lineWidth = 5;
-            context.strokeStyle = "#00000";
+            context.strokeStyle = data.color || this.state.color;
+            context.fillStyle = data.color || this.state.color;
+            context.fill();
             context.stroke();
         });
 
@@ -68,8 +73,21 @@ export default class Whiteboard extends Component {
         socket.emit('onDraw', {
             x: e.clientX,
             y: e.clientY,
+            color: this.state.color,
             canvas: [this.canvas.current.toDataURL("image/png")]
         });
+        const context = this.canvas.current.getContext("2d")
+        context.beginPath();
+        context.arc(e.clientX, e.clientY, 7.5, 0, Math.PI * 2, false);
+        context.lineWidth = 5;
+        context.strokeStyle = this.state.color;
+        context.fillStyle = this.state.color;
+        context.fill();
+        context.stroke();
+    }
+
+    setColor = (color) => {
+        this.setState({color});
     }
 
     clearCanvas = () => {
@@ -94,11 +112,13 @@ export default class Whiteboard extends Component {
                             e.preventDefault();
                             this.draw(e);
                         }}
-                        
                         ref={this.canvas}
-                        
-                        ></canvas>
-                    
+                    ></canvas>
+                    <div className="color blue" onClick={() => this.setColor('blue')}></div>
+                    <div className="color red" onClick={() => this.setColor('red')}></div>
+                    <div className="color green" onClick={() => this.setColor('green')}></div>
+                    <div className="color gray" onClick={() => this.setColor('gray')}></div>
+                    <div className="color black" onClick={() => this.setColor('black')}></div>
                     <button onClick={() => this.clearCanvas()}>Clear</button>
                     <h2>Users:</h2> 
                     <ul>{this.state.users.map((user, index) => <li key={'user'+index}>{user}</li>)}</ul>
