@@ -74,9 +74,9 @@ export default class Whiteboard extends Component {
             width: this.state.width,
             canvas: [this.canvas.current.toDataURL("image/png")]
         };
-        socket.emit('onDraw', data);
         const ctx = this.canvas.current.getContext("2d");
         this.drawCircle(ctx, data);
+        socket.emit('onDraw', data);
     }
 
 
@@ -118,6 +118,7 @@ export default class Whiteboard extends Component {
     }
 
     clearCanvas = () => {
+        ref.getContext("2d").clearRect(0, 0, ref.width, ref.height);
         socket.emit('onCanvasClear');
     }
     
