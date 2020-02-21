@@ -17,9 +17,10 @@ Draw Together is a real-time whiteboard for collaborating and drawing with other
 
 ### Steps
 1) Download the content of this repository.
-2) Move into the directory using the ```cd```([?](https://en.wikipedia.org/wiki/Cd_(command) "More info about cd")) command.
-3) Run ```npm run start```.
-4) Open your browser and go to ```localhost:3000```.
+2) Open your terminal (linux/MacOS) or Git Bash.
+3) Move into the directory using the ```cd```([?](https://en.wikipedia.org/wiki/Cd_(command) "More info about cd")) command.
+4) Run ```npm run start```.
+5) Open your browser and go to ```localhost:3000```.
 
 ## 🏹 Links
 -  [Server](https://github.com/naorpeled/draw-together-server/ "Draw Together's server")
