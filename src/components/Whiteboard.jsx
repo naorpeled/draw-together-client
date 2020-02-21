@@ -17,7 +17,8 @@ export default class Whiteboard extends Component {
             users: [],
             drawing: false,
             color: 'black',
-            width: 1
+            width: 2,
+            cursor: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAk0lEQVQ4T+3TOwoCMRAA0LcI/iqtrL2i3sNmz2hhpZU/EGQghaDZJRqw2YF0mZfJZNKoHE1lzwD+3tG+Hs4wSStOu6V1yR3dBQa2zCQe8RHtAgMLdIMt7mixS1igb9EFrjDC/iUr0DUeOPwdXGCeufIZp9IKqz9KFBDoFONUTfTwmnvh2NM3h8WTPoDFLSv6KV/pT8I/HBXoS+DqAAAAAElFTkSuQmCC'
         }
     }
 
@@ -29,9 +30,10 @@ export default class Whiteboard extends Component {
 
         socket.on('initialCanvasLoad', (canvas) => {
             if(canvas == null) return;
+
             const ctx = this.canvas.current.getContext("2d");
             let imageObj = new Image();
-            
+
             imageObj.src = canvas;
             imageObj.onload = function() {
               ctx.drawImage(this, 0, 0);
@@ -46,14 +48,8 @@ export default class Whiteboard extends Component {
         });
 
         socket.on('onDraw', (data) => {
-            const context = this.canvas.current.getContext("2d")
-            context.beginPath();
-            context.arc(data.x, data.y, 7.5, 0, Math.PI * 2, false);
-            context.lineWidth = data.width || this.state.width;
-            context.strokeStyle = data.color || this.state.color;
-            context.fillStyle = data.color || this.state.color;
-            context.fill();
-            context.stroke();
+            const ctx = this.canvas.current.getContext("2d");
+            this.drawCircle(ctx, data);
         });
 
         socket.on('onCanvasClear', (data) => {
@@ -71,30 +67,54 @@ export default class Whiteboard extends Component {
     }
 
     draw = (e) => {
-        socket.emit('onDraw', {
+        const data = {
             x: e.clientX,
             y: e.clientY,
             color: this.state.color,
             width: this.state.width,
             canvas: [this.canvas.current.toDataURL("image/png")]
-        });
-        const context = this.canvas.current.getContext("2d")
+        };
+        socket.emit('onDraw', data);
+        const ctx = this.canvas.current.getContext("2d");
+        this.drawCircle(ctx, data);
+    }
+
+
+    drawCircle = (context, data) => {
         context.beginPath();
-        context.arc(e.clientX, e.clientY, 7.5, 0, Math.PI * 2, false);
-        context.lineWidth = this.state.width;
-        context.strokeStyle = this.state.color;
-        context.fillStyle = this.state.color;
+        context.arc(data.x, data.y, data.width, 0, Math.PI * 2, false);
+        context.lineWidth = data.width*2;
+        context.strokeStyle = data.color;
+        context.fillStyle = data.color;
         context.fill();
         context.stroke();
     }
 
+    getNewCursorDataURL = (width, color) => {
+        const image = document.createElement("canvas");
+        image.height = image.width = width * 10;
+        const ctx = image.getContext("2d"); 
+        ctx.beginPath();
+        ctx.arc(image.width/2, image.height/2, width, 0,  360);
+        ctx.lineWidth = width*2;
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.globalAlpha = 0.1;
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+        return image.toDataURL("image/png");
+    }
+
     setColor = (color) => {
-        this.setState({color});
+        const cursor = this.getNewCursorDataURL(this.state.width, color);
+        this.setState({color, cursor});
     }
 
     setWidth = (e) => {
         const width = e.target.value;
-        this.setState({width});
+        const cursor = this.getNewCursorDataURL(width, this.state.color);
+        this.setState({width, cursor});
     }
 
     clearCanvas = () => {
@@ -106,6 +126,7 @@ export default class Whiteboard extends Component {
             <div className="game">
                 <Fragment>
                     <canvas
+                        style={{ cursor: `url(${this.state.cursor}) ${(this.state.width * 5) - 7.5} ${(this.state.width * 5) - 7.5}, auto`}}
                         onMouseMove={(e) => {
                             if(this.state.drawing) {
                                 this.draw(e);
@@ -126,8 +147,7 @@ export default class Whiteboard extends Component {
                     <div className="color green" onClick={() => this.setColor('green')}></div>
                     <div className="color gray" onClick={() => this.setColor('gray')}></div>
                     <div className="color black" onClick={() => this.setColor('black')}></div>
-                    <input type="range" min="1" max="25" value={this.state.width} onChange={(e) => this.setWidth(e)} />
-                    {this.state.width}x
+                    <input type="range" min="2" max="10" value={this.state.width} onChange={(e) => this.setWidth(e)} />
                     <button onClick={() => this.clearCanvas()}>Clear</button>
                     <h2>Users:</h2> 
                     <ul>{this.state.users.map((user, index) => <li key={'user'+index}>{user}</li>)}</ul>
