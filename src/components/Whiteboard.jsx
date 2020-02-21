@@ -16,7 +16,8 @@ export default class Whiteboard extends Component {
         this.state = {
             users: [],
             drawing: false,
-            color: 'black'
+            color: 'black',
+            width: 1
         }
     }
 
@@ -48,7 +49,7 @@ export default class Whiteboard extends Component {
             const context = this.canvas.current.getContext("2d")
             context.beginPath();
             context.arc(data.x, data.y, 7.5, 0, Math.PI * 2, false);
-            context.lineWidth = 5;
+            context.lineWidth = data.width || this.state.width;
             context.strokeStyle = data.color || this.state.color;
             context.fillStyle = data.color || this.state.color;
             context.fill();
@@ -74,12 +75,13 @@ export default class Whiteboard extends Component {
             x: e.clientX,
             y: e.clientY,
             color: this.state.color,
+            width: this.state.width,
             canvas: [this.canvas.current.toDataURL("image/png")]
         });
         const context = this.canvas.current.getContext("2d")
         context.beginPath();
         context.arc(e.clientX, e.clientY, 7.5, 0, Math.PI * 2, false);
-        context.lineWidth = 5;
+        context.lineWidth = this.state.width;
         context.strokeStyle = this.state.color;
         context.fillStyle = this.state.color;
         context.fill();
@@ -88,6 +90,11 @@ export default class Whiteboard extends Component {
 
     setColor = (color) => {
         this.setState({color});
+    }
+
+    setWidth = (e) => {
+        const width = e.target.value;
+        this.setState({width});
     }
 
     clearCanvas = () => {
@@ -119,6 +126,8 @@ export default class Whiteboard extends Component {
                     <div className="color green" onClick={() => this.setColor('green')}></div>
                     <div className="color gray" onClick={() => this.setColor('gray')}></div>
                     <div className="color black" onClick={() => this.setColor('black')}></div>
+                    <input type="range" min="1" max="25" value={this.state.width} onChange={(e) => this.setWidth(e)} />
+                    {this.state.width}x
                     <button onClick={() => this.clearCanvas()}>Clear</button>
                     <h2>Users:</h2> 
                     <ul>{this.state.users.map((user, index) => <li key={'user'+index}>{user}</li>)}</ul>
