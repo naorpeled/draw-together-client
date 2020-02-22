@@ -32,7 +32,11 @@ export default class Whiteboard extends Component {
         });
 
         socket.on('onClientConnect', (users, messages = []) => {
-            this.setState({users: [...users], chatMessages: [...messages]});
+            let userArr = [];
+            for(let user of users) {
+                userArr.push(user.name);
+            }
+            this.setState({users: userArr, chatMessages: [...messages]});
         });
 
         socket.on('initialCanvasLoad', (canvas) => {
@@ -45,13 +49,6 @@ export default class Whiteboard extends Component {
             imageObj.onload = function() {
               ctx.drawImage(this, 0, 0);
             };
-        });
-
-        socket.on('disconnect', () => {
-            console.log('Disconnected');
-            const ref = this.canvas.current;
-            ref.getContext("2d").clearRect(0, 0, ref.width, ref.height);
-            socket.emit('onClientDisconnect', this.context.name);
         });
 
         socket.on('onDraw', (data) => {
@@ -69,7 +66,16 @@ export default class Whiteboard extends Component {
         });
 
         socket.on('onClientDisconnect', (users) => {
-            this.setState({users: [...users]})
+            let userArr = [];
+            for(let user of users) {
+                userArr.push(user.name);
+            }
+            console.log(userArr);
+            this.setState({users: userArr});
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected');
         });
     }
 
@@ -163,7 +169,7 @@ export default class Whiteboard extends Component {
             content: this.state.currentMessage
         }
         this.appendChatMessage(data);
-        this.state.currentMessage = '';
+        this.setState({currentMessage: ''});
         socket.emit('onChatMessage', data);
     }
     
@@ -207,12 +213,12 @@ export default class Whiteboard extends Component {
                     <div className="chatContainer">
                         <ul>
                             {this.state.chatMessages.map((msg, index) => {
-                                return (<>
-                                            <li className="chatMessage" key={'message_' + index}>
+                                return (<Fragment key={'message_' + index}>
+                                            <li className="chatMessage">
                                                 [{msg.time}] {msg.author}: {msg.content}
                                             </li>
                                             <hr />
-                                        </>);
+                                        </Fragment>);
                             })}
                         </ul>
                         <form>
