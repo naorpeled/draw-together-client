@@ -118,6 +118,7 @@ export default class Whiteboard extends Component {
     }
 
     clearCanvas = () => {
+        const ref = this.canvas.current;
         ref.getContext("2d").clearRect(0, 0, ref.width, ref.height);
         socket.emit('onCanvasClear');
     }
