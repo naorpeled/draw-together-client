@@ -18,7 +18,9 @@ export default class Whiteboard extends Component {
             drawing: false,
             color: 'black',
             width: 2,
-            cursor: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAk0lEQVQ4T+3TOwoCMRAA0LcI/iqtrL2i3sNmz2hhpZU/EGQghaDZJRqw2YF0mZfJZNKoHE1lzwD+3tG+Hs4wSStOu6V1yR3dBQa2zCQe8RHtAgMLdIMt7mixS1igb9EFrjDC/iUr0DUeOPwdXGCeufIZp9IKqz9KFBDoFONUTfTwmnvh2NM3h8WTPoDFLSv6KV/pT8I/HBXoS+DqAAAAAElFTkSuQmCC'
+            cursor: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAk0lEQVQ4T+3TOwoCMRAA0LcI/iqtrL2i3sNmz2hhpZU/EGQghaDZJRqw2YF0mZfJZNKoHE1lzwD+3tG+Hs4wSStOu6V1yR3dBQa2zCQe8RHtAgMLdIMt7mixS1igb9EFrjDC/iUr0DUeOPwdXGCeufIZp9IKqz9KFBDoFONUTfTwmnvh2NM3h8WTPoDFLSv6KV/pT8I/HBXoS+DqAAAAAElFTkSuQmCC',
+            chatMessages: [],
+            currentMessage: ''
         }
         this.current = {};
     }
@@ -27,6 +29,10 @@ export default class Whiteboard extends Component {
         socket.on('connect', () => {
             console.log('Connected');
             socket.emit('onClientConnect', this.context.name);
+        });
+
+        socket.on('onClientConnect', (users, messages = []) => {
+            this.setState({users: [...users], chatMessages: [...messages]});
         });
 
         socket.on('initialCanvasLoad', (canvas) => {
@@ -58,8 +64,8 @@ export default class Whiteboard extends Component {
             ref.getContext("2d").clearRect(0, 0, ref.width, ref.height);
         });
 
-        socket.on('onClientConnect', (users) => {
-            this.setState({users: [...users]})
+        socket.on('onChatMessage', (data) => {
+            this.appendChatMessage(data);
         });
 
         socket.on('onClientDisconnect', (users) => {
@@ -82,6 +88,7 @@ export default class Whiteboard extends Component {
         socket.emit('onDraw', data);
     }
 
+    // Canvas utilities
 
     drawCircle = (context, data) => {
         context.beginPath();
@@ -133,6 +140,32 @@ export default class Whiteboard extends Component {
         ref.getContext("2d").clearRect(0, 0, ref.width, ref.height);
         socket.emit('onCanvasClear');
     }
+
+    // Chat utilities
+
+    appendChatMessage(data) {
+        let chatMessages = this.state.chatMessages;
+        const {author, time, content} = data;
+
+        chatMessages.push({
+            author,
+            time,
+            content
+        });
+        this.setState({chatMessages});
+    }
+
+    sendChatMessage = () => {
+        let timestamp = new Date();
+        const data = {
+            author: this.context.name,
+            time: `${timestamp.getHours()}:${timestamp.getMinutes()}`,
+            content: this.state.currentMessage
+        }
+        this.appendChatMessage(data);
+        this.state.currentMessage = '';
+        socket.emit('onChatMessage', data);
+    }
     
     render() {
         return (
@@ -171,6 +204,30 @@ export default class Whiteboard extends Component {
                     <button onClick={() => this.clearCanvas()}>Clear</button>
                     <h2>Users:</h2> 
                     <ul>{this.state.users.map((user, index) => <li key={'user'+index}>{user}</li>)}</ul>
+                    <div className="chatContainer">
+                        <ul>
+                            {this.state.chatMessages.map((msg, index) => {
+                                return (<>
+                                            <li className="chatMessage" key={'message_' + index}>
+                                                [{msg.time}] {msg.author}: {msg.content}
+                                            </li>
+                                            <hr />
+                                        </>);
+                            })}
+                        </ul>
+                        <form>
+                            <input 
+                            type="text"
+                            onChange={(e) => this.setState({currentMessage: e.target.value})}
+                            value={this.state.currentMessage}></input>
+                            <button type="submit" onClick={(e) => {
+                                e.preventDefault();
+                                if(this.state.currentMessage) {
+                                    this.sendChatMessage();
+                                }
+                            }}>Send</button>
+                        </form>
+                    </div>
                 </Fragment>
             </div>
         )
