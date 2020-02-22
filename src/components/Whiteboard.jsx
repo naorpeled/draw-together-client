@@ -20,6 +20,7 @@ export default class Whiteboard extends Component {
             width: 2,
             cursor: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAk0lEQVQ4T+3TOwoCMRAA0LcI/iqtrL2i3sNmz2hhpZU/EGQghaDZJRqw2YF0mZfJZNKoHE1lzwD+3tG+Hs4wSStOu6V1yR3dBQa2zCQe8RHtAgMLdIMt7mixS1igb9EFrjDC/iUr0DUeOPwdXGCeufIZp9IKqz9KFBDoFONUTfTwmnvh2NM3h8WTPoDFLSv6KV/pT8I/HBXoS+DqAAAAAElFTkSuQmCC'
         }
+        this.current = {};
     }
 
     componentDidMount() {
@@ -66,12 +67,14 @@ export default class Whiteboard extends Component {
         });
     }
 
-    draw = (e) => {
+    draw = (e, to = {}) => {
         const data = {
             x: e.clientX,
             y: e.clientY,
             color: this.state.color,
             width: this.state.width,
+            toX: to.x || null,
+            toY: to.y || null,
             canvas: [this.canvas.current.toDataURL("image/png")]
         };
         const ctx = this.canvas.current.getContext("2d");
@@ -82,12 +85,20 @@ export default class Whiteboard extends Component {
 
     drawCircle = (context, data) => {
         context.beginPath();
-        context.arc(data.x, data.y, data.width, 0, Math.PI * 2, false);
+        // Set line coordinates
+        context.moveTo(data.x, data.y);
+        context.lineTo(data.toX || data.x, data.toY || data.y);
+        // Set line shape
+        context.lineJoin="round";
+        context.lineCap="round";
+        // Set line width and style
         context.lineWidth = data.width*2;
         context.strokeStyle = data.color;
         context.fillStyle = data.color;
+        // Draw line
         context.fill();
         context.stroke();
+        context.closePath();
     }
 
     getNewCursorDataURL = (width, color) => {
@@ -131,12 +142,19 @@ export default class Whiteboard extends Component {
                         style={{ cursor: `url(${this.state.cursor}) ${(this.state.width * 5) - 7.5} ${(this.state.width * 5) - 7.5}, auto`}}
                         onMouseMove={(e) => {
                             if(this.state.drawing) {
-                                this.draw(e);
+                                this.draw(e, this.current);
+                                this.current = {x: e.clientX, y: e.clientY};
                             }
                         }}
                         onMouseDown={() =>  this.setState({drawing: true})}
-                        onMouseUp={() =>  this.setState({drawing: false})}
-                        onMouseLeave={() => {this.setState({drawing: false})}}
+                        onMouseUp={() => {
+                            this.setState({drawing: false});
+                            this.current = {};
+                        }}
+                        onMouseLeave={() => {
+                            this.setState({drawing: false});
+                            this.current = {};
+                        }}
                         onClick={(e) => this.draw(e)}
                         onContextMenu={(e) => {
                             e.preventDefault();
