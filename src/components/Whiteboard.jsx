@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import AppContext from '../context/AppContext'
 import io from 'socket.io-client';
-import '../styles/global.css';
 
 let socket;
     
@@ -177,39 +176,42 @@ export default class Whiteboard extends Component {
     
     render() {
         return (
-            <div className="game">
+            <div className="whiteboard">
                 <Fragment>
-                    <canvas
-                        style={{ cursor: `url(${this.state.cursor}) ${(this.state.width * 5) - 7.5} ${(this.state.width * 5) - 7.5}, auto`}}
-                        onMouseMove={(e) => {
-                            if(this.state.drawing) {
-                                this.draw(e, this.current);
-                                this.current = {x: e.clientX, y: e.clientY};
-                            }
-                        }}
-                        onMouseDown={() =>  this.setState({drawing: true})}
-                        onMouseUp={() => {
-                            this.setState({drawing: false});
-                            this.current = {};
-                        }}
-                        onMouseLeave={() => {
-                            this.setState({drawing: false});
-                            this.current = {};
-                        }}
-                        onClick={(e) => this.draw(e)}
-                        onContextMenu={(e) => {
-                            e.preventDefault();
-                            this.draw(e);
-                        }}
-                        ref={this.canvas}
-                    ></canvas>
-                    <div className="color blue" onClick={() => this.setColor('blue')}></div>
-                    <div className="color red" onClick={() => this.setColor('red')}></div>
-                    <div className="color green" onClick={() => this.setColor('green')}></div>
-                    <div className="color gray" onClick={() => this.setColor('gray')}></div>
-                    <div className="color black" onClick={() => this.setColor('black')}></div>
-                    <input type="range" min="2" max="10" value={this.state.width} onChange={(e) => this.setWidth(e)} />
-                    <button onClick={() => this.clearCanvas()}>Clear</button>
+                    <main>
+                        <canvas
+                            style={{ cursor: `url(${this.state.cursor}) ${(this.state.width * 7.5)-7.5} ${(this.state.width * 7.5) -7.5}, auto`}}
+                            onMouseMove={(e) => {
+                                if(this.state.drawing) {
+                                    this.draw(e, this.current);
+                                    this.current = {x: e.clientX, y: e.clientY};
+                                }
+                            }}
+                            onMouseDown={() =>  this.setState({drawing: true})}
+                            onMouseUp={() => {
+                                this.setState({drawing: false});
+                                this.current = {};
+                            }}
+                            onMouseLeave={() => {
+                                this.setState({drawing: false});
+                                this.current = {};
+                            }}
+                            onClick={(e) => this.draw(e)}
+                            onContextMenu={(e) => {
+                                e.preventDefault();
+                                this.draw(e);
+                            }}
+                            ref={this.canvas}
+                        ></canvas>
+                        <div className="color blue" onClick={() => this.setColor('blue')}></div>
+                        <div className="color red" onClick={() => this.setColor('red')}></div>
+                        <div className="color green" onClick={() => this.setColor('green')}></div>
+                        <div className="color gray" onClick={() => this.setColor('gray')}></div>
+                        <div className="color black" onClick={() => this.setColor('black')}></div>
+                        <input type="range" min="2" max="10" value={this.state.width} onChange={(e) => this.setWidth(e)} />
+                        <button onClick={() => this.clearCanvas()}>Clear</button>
+                    </main>
+                
                     <h2>Users:</h2> 
                     <ul>{this.state.users.map((user, index) => <li key={'user'+index}>{user}</li>)}</ul>
                     <div className="chatContainer">

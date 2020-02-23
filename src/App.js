@@ -4,10 +4,11 @@ import AppProvider from './components/AppProvider';
 import Welcome from './components/Welcome';
 import Whiteboard from './components/Whiteboard';
 import AppContext from './context/AppContext';
+import './styles/global.css';
 
 export default function App() {
   return (
-    <div className="App">
+    <div id="App">
       <AppProvider>
         <AppContext.Consumer>
           {(context) => (
