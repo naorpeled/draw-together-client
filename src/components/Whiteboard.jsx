@@ -11,7 +11,6 @@ export default class Whiteboard extends Component {
     constructor(props) {
         super(props);
 
-        socket = io('http://localhost:8000');
         this.canvas = React.createRef();
         this.state = {
             users: [],
@@ -26,12 +25,15 @@ export default class Whiteboard extends Component {
     }
 
     componentDidMount() {
+        socket = io(`http://localhost:8000?roomId=${this.context.roomId}`);
         socket.on('connect', () => {
             console.log('Connected');
             socket.emit('onClientConnect', this.context.name);
         });
 
         socket.on('onClientConnect', (users, messages = []) => {
+            console.log(users);
+            console.log(messages);
             let userArr = [];
             for(let user of users) {
                 userArr.push(user.name);
@@ -40,7 +42,7 @@ export default class Whiteboard extends Component {
         });
 
         socket.on('initialCanvasLoad', (canvas) => {
-            if(canvas == null) return;
+            if(!canvas) return;
 
             const ctx = this.canvas.current.getContext("2d");
             let imageObj = new Image();

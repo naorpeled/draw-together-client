@@ -4,6 +4,7 @@ import AppContext from '../context/AppContext';
 class AppProvider extends React.Component {
     state = {
         name: "Guest",
+        roomId: '',
         showBoard: false
     };
 
@@ -12,9 +13,13 @@ class AppProvider extends React.Component {
             <AppContext.Provider
                 value={{
                     name: this.state.name,
+                    roomId: this.state.roomId,
                     showBoard: this.state.showBoard,
                     setName: (name) => {
                         this.setState({name});
+                    },
+                    setRoomId: (roomId) => {
+                        this.setState({roomId});
                     },
                     toggleShowBoard: () => {
                         this.setState({
