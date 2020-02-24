@@ -1,11 +1,13 @@
 import React from 'react';
 import AppContext from '../context/AppContext';
+import io from 'socket.io-client';
 
 class AppProvider extends React.Component {
     state = {
         name: "Guest",
         roomId: '',
-        showBoard: false
+        showBoard: false,
+        socket: null
     };
 
     render() {
@@ -15,6 +17,7 @@ class AppProvider extends React.Component {
                     name: this.state.name,
                     roomId: this.state.roomId,
                     showBoard: this.state.showBoard,
+                    socket: this.state.socket,
                     setName: (name) => {
                         this.setState({name});
                     },
@@ -22,8 +25,10 @@ class AppProvider extends React.Component {
                         this.setState({roomId});
                     },
                     toggleShowBoard: () => {
+                        const socket = io(`http://localhost:8000?roomId=${this.state.roomId}`);
                         this.setState({
-                            showBoard: [!this.state.showBoard]
+                            showBoard: [!this.state.showBoard],
+                            socket
                         });
                     }
                 }}

@@ -1,51 +1,71 @@
 import React, { Component, Fragment } from 'react'
 import AppContext from '../context/AppContext'
-import io from 'socket.io-client';
+
+import Chat from './Chat';
+
 
 let socket;
-    
+
 export default class Whiteboard extends Component {
     static contextType = AppContext;
     
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
 
+        socket = this.context.socket;
         this.canvas = React.createRef();
+        this.mainSection = React.createRef();
         this.state = {
             users: [],
             drawing: false,
             color: 'black',
             width: 2,
-            cursor: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAk0lEQVQ4T+3TOwoCMRAA0LcI/iqtrL2i3sNmz2hhpZU/EGQghaDZJRqw2YF0mZfJZNKoHE1lzwD+3tG+Hs4wSStOu6V1yR3dBQa2zCQe8RHtAgMLdIMt7mixS1igb9EFrjDC/iUr0DUeOPwdXGCeufIZp9IKqz9KFBDoFONUTfTwmnvh2NM3h8WTPoDFLSv6KV/pT8I/HBXoS+DqAAAAAElFTkSuQmCC',
-            chatMessages: [],
-            currentMessage: ''
+            cursor: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAk0lEQVQ4T+3TOwoCMRAA0LcI/iqtrL2i3sNmz2hhpZU/EGQghaDZJRqw2YF0mZfJZNKoHE1lzwD+3tG+Hs4wSStOu6V1yR3dBQa2zCQe8RHtAgMLdIMt7mixS1igb9EFrjDC/iUr0DUeOPwdXGCeufIZp9IKqz9KFBDoFONUTfTwmnvh2NM3h8WTPoDFLSv6KV/pT8I/HBXoS+DqAAAAAElFTkSuQmCC'
         }
         this.current = {};
     }
 
     componentDidMount() {
-        socket = io(`http://localhost:8000?roomId=${this.context.roomId}`);
+        const canvas = this.canvas.current;
+        const mainSection = this.mainSection.current;
+        const prevWidth = mainSection.clientWidth;
+        const prevHeight = mainSection.clientHeight;
+
+        window.addEventListener('resize', (e) => {
+            const data = { prevWidth, prevHeight };
+            const mainSection = this.mainSection.current;
+            const canvas = this.canvas.current.getContext("2d");
+            canvas.width  = mainSection.clientWidth;
+            canvas.height = mainSection.clientHeight;
+
+            
+            socket.emit('onClientRescale', data);
+        });
+
         socket.on('connect', () => {
             console.log('Connected');
             socket.emit('onClientConnect', this.context.name);
         });
 
-        socket.on('onClientConnect', (users, messages = []) => {
-            console.log(users);
-            console.log(messages);
+        socket.on('onClientConnect', (data) => {
             let userArr = [];
-            for(let user of users) {
+            for(let user of data.users) {
                 userArr.push(user.name);
             }
-            this.setState({users: userArr, chatMessages: [...messages]});
+            this.setState({users: userArr});
         });
 
         socket.on('initialCanvasLoad', (canvas) => {
             if(!canvas) return;
 
-            const ctx = this.canvas.current.getContext("2d");
-            let imageObj = new Image();
+            const currentCanvas = this.canvas.current;
+            const ctx = currentCanvas.getContext("2d");
 
+            currentCanvas.width = currentCanvas.clientWidth;
+            currentCanvas.height = currentCanvas.clientHeight;
+
+            let imageObj = new Image();
+            console.log("canvas", canvas);
             imageObj.src = canvas;
             imageObj.onload = function() {
               ctx.drawImage(this, 0, 0);
@@ -62,8 +82,30 @@ export default class Whiteboard extends Component {
             ref.getContext("2d").clearRect(0, 0, ref.width, ref.height);
         });
 
-        socket.on('onChatMessage', (data) => {
-            this.appendChatMessage(data);
+        socket.on('onClientRescale', (data) => {
+            const canvas = this.canvas.current;
+            const mainSection = this.mainSection.current;
+            const currentWidth = mainSection.clientWidth;
+            const currentHeight = mainSection.clientHeight;
+            const prevWidth = data.prevWidth;
+            const prevHeight = data.prevHeight;
+            const scaleX = prevWidth > currentWidth ? prevWidth/currentWidth : currentWidth/prevWidth;
+            const scaleY = prevHeight > currentHeight ? prevHeight/currentHeight : currentHeight/prevHeight;
+           
+            const ctx = canvas.getContext("2d");
+            // ctx.width  = canvas.clientWidth;
+            // ctx.height = canvas.clientHeight;
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+
+            let imageObj = new Image();
+
+            imageObj.src = data.canvas;
+            imageObj.onload = function() {
+              //ctx.scale(scaleX, scaleY);
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              ctx.drawImage(this, 0, 0);
+            };
         });
 
         socket.on('onClientDisconnect', (users) => {
@@ -71,13 +113,16 @@ export default class Whiteboard extends Component {
             for(let user of users) {
                 userArr.push(user.name);
             }
-            console.log(userArr);
             this.setState({users: userArr});
         });
 
         socket.on('disconnect', () => {
             console.log('Disconnected');
         });
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize');
     }
 
     draw = (e, to = {}) => {
@@ -91,17 +136,17 @@ export default class Whiteboard extends Component {
             canvas: [this.canvas.current.toDataURL("image/png")]
         };
         const ctx = this.canvas.current.getContext("2d");
-        this.drawCircle(ctx, data);
+        this.drawLine(ctx, data);
         socket.emit('onDraw', data);
     }
 
     // Canvas utilities
 
-    drawCircle = (context, data) => {
+    drawLine = (context, data) => {
         context.beginPath();
         // Set line coordinates
         context.moveTo(data.x, data.y);
-        context.lineTo(data.toX || data.x, data.toY || data.y);
+        context.lineTo(data.toX ?? data.x, data.toY ?? data.y);
         // Set line shape
         context.lineJoin="round";
         context.lineCap="round";
@@ -148,37 +193,11 @@ export default class Whiteboard extends Component {
         socket.emit('onCanvasClear');
     }
 
-    // Chat utilities
-
-    appendChatMessage(data) {
-        let chatMessages = this.state.chatMessages;
-        const {author, time, content} = data;
-
-        chatMessages.push({
-            author,
-            time,
-            content
-        });
-        this.setState({chatMessages});
-    }
-
-    sendChatMessage = () => {
-        let timestamp = new Date();
-        const data = {
-            author: this.context.name,
-            time: `${timestamp.getHours()}:${timestamp.getMinutes()}`,
-            content: this.state.currentMessage
-        }
-        this.appendChatMessage(data);
-        this.setState({currentMessage: ''});
-        socket.emit('onChatMessage', data);
-    }
-    
     render() {
         return (
-            <div className="whiteboard">
+            <div id="whiteboard">
                 <Fragment>
-                    <main>
+                    <main ref={this.mainSection}>
                         <canvas
                             style={{ cursor: `url(${this.state.cursor}) ${(this.state.width * 7.5)-7.5} ${(this.state.width * 7.5) -7.5}, auto`}}
                             onMouseMove={(e) => {
@@ -203,6 +222,13 @@ export default class Whiteboard extends Component {
                             }}
                             ref={this.canvas}
                         ></canvas>
+                    </main>
+                    <aside>
+                        {/* <h2>Users:</h2> 
+                        <ul>{this.state.users.map((user, index) => <li key={'user'+index}>{user}</li>)}</ul> */}
+                        <Chat />
+                    </aside>
+                    <footer>
                         <div className="color blue" onClick={() => this.setColor('blue')}></div>
                         <div className="color red" onClick={() => this.setColor('red')}></div>
                         <div className="color green" onClick={() => this.setColor('green')}></div>
@@ -210,34 +236,7 @@ export default class Whiteboard extends Component {
                         <div className="color black" onClick={() => this.setColor('black')}></div>
                         <input type="range" min="2" max="10" value={this.state.width} onChange={(e) => this.setWidth(e)} />
                         <button onClick={() => this.clearCanvas()}>Clear</button>
-                    </main>
-                
-                    <h2>Users:</h2> 
-                    <ul>{this.state.users.map((user, index) => <li key={'user'+index}>{user}</li>)}</ul>
-                    <div className="chatContainer">
-                        <ul>
-                            {this.state.chatMessages.map((msg, index) => {
-                                return (<Fragment key={'message_' + index}>
-                                            <li className="chatMessage">
-                                                [{msg.time}] {msg.author}: {msg.content}
-                                            </li>
-                                            <hr />
-                                        </Fragment>);
-                            })}
-                        </ul>
-                        <form>
-                            <input 
-                            type="text"
-                            onChange={(e) => this.setState({currentMessage: e.target.value})}
-                            value={this.state.currentMessage}></input>
-                            <button type="submit" onClick={(e) => {
-                                e.preventDefault();
-                                if(this.state.currentMessage) {
-                                    this.sendChatMessage();
-                                }
-                            }}>Send</button>
-                        </form>
-                    </div>
+                    </footer>
                 </Fragment>
             </div>
         )
