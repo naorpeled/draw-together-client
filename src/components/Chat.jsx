@@ -52,28 +52,27 @@ export default class Chat extends Component {
 
     render() {
         return (
-            <div className="chatContainer">
-            <ul>
+            <div id="chat">
+            <div>
                 {this.state.messages.map((msg, index) => {
                     return (<Fragment key={'message_' + index}>
-                                <li className="chatMessage">
+                                <p className="chatMessage">
                                     [{msg.time}] {msg.author}: {msg.content}
-                                </li>
-                                <hr />
+                                </p>
                             </Fragment>);
                 })}
-            </ul>
-            <form>
+            </div>
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                if(this.state.currentMessage) {
+                    this.sendChatMessage();
+                }
+            }}>
                 <input 
                 type="text"
                 onChange={(e) => this.setState({currentMessage: e.target.value})}
-                value={this.state.currentMessage}></input>
-                <button type="submit" onClick={(e) => {
-                    e.preventDefault();
-                    if(this.state.currentMessage) {
-                        this.sendChatMessage();
-                    }
-                }}>Send</button>
+                value={this.state.currentMessage}
+                placeholder="Enter text here"></input>
             </form>
         </div>
         )

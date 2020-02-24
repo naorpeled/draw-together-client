@@ -1,7 +1,8 @@
 import React, { Component, Fragment } from 'react'
 import AppContext from '../context/AppContext'
-
 import Chat from './Chat';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrashAlt  } from '@fortawesome/free-solid-svg-icons';
 
 
 let socket;
@@ -33,12 +34,6 @@ export default class Whiteboard extends Component {
 
         window.addEventListener('resize', (e) => {
             const data = { prevWidth, prevHeight };
-            const mainSection = this.mainSection.current;
-            const canvas = this.canvas.current.getContext("2d");
-            canvas.width  = mainSection.clientWidth;
-            canvas.height = mainSection.clientHeight;
-
-            
             socket.emit('onClientRescale', data);
         });
 
@@ -61,8 +56,8 @@ export default class Whiteboard extends Component {
             const currentCanvas = this.canvas.current;
             const ctx = currentCanvas.getContext("2d");
 
-            currentCanvas.width = currentCanvas.clientWidth;
-            currentCanvas.height = currentCanvas.clientHeight;
+            ctx.canvas.width = currentCanvas.clientWidth;
+            ctx.canvas.height = currentCanvas.clientHeight;
 
             let imageObj = new Image();
             console.log("canvas", canvas);
@@ -93,8 +88,8 @@ export default class Whiteboard extends Component {
             const scaleY = prevHeight > currentHeight ? prevHeight/currentHeight : currentHeight/prevHeight;
            
             const ctx = canvas.getContext("2d");
-            // ctx.width  = canvas.clientWidth;
-            // ctx.height = canvas.clientHeight;
+            ctx.canvas.width  = canvas.clientWidth;
+            ctx.canvas.height = canvas.clientHeight;
             canvas.width = canvas.clientWidth;
             canvas.height = canvas.clientHeight;
 
@@ -235,7 +230,10 @@ export default class Whiteboard extends Component {
                         <div className="color gray" onClick={() => this.setColor('gray')}></div>
                         <div className="color black" onClick={() => this.setColor('black')}></div>
                         <input type="range" min="2" max="10" value={this.state.width} onChange={(e) => this.setWidth(e)} />
-                        <button onClick={() => this.clearCanvas()}>Clear</button>
+                        <div className="color clear" onClick={() => this.clearCanvas()}>                  <FontAwesomeIcon
+                        color="gray"
+                        icon={faTrashAlt}
+                        ></FontAwesomeIcon></div>
                     </footer>
                 </Fragment>
             </div>
