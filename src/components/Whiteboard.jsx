@@ -4,7 +4,6 @@ import Chat from './Chat';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrashAlt  } from '@fortawesome/free-solid-svg-icons';
 
-
 let socket;
 
 export default class Whiteboard extends Component {
@@ -15,7 +14,7 @@ export default class Whiteboard extends Component {
 
         socket = this.context.socket;
         this.canvas = React.createRef();
-        this.mainSection = React.createRef();
+        this.whiteboard = React.createRef();
         this.state = {
             users: [],
             drawing: false,
@@ -28,9 +27,8 @@ export default class Whiteboard extends Component {
 
     componentDidMount() {
         const canvas = this.canvas.current;
-        const mainSection = this.mainSection.current;
-        const prevWidth = mainSection.clientWidth;
-        const prevHeight = mainSection.clientHeight;
+        const prevWidth = canvas.clientWidth;
+        const prevHeight = canvas.clientHeight;
 
         window.addEventListener('resize', (e) => {
             const data = { prevWidth, prevHeight };
@@ -42,17 +40,16 @@ export default class Whiteboard extends Component {
             socket.emit('onClientConnect', this.context.name);
         });
 
-        socket.on('onClientConnect', (data) => {
+        socket.on('onClientConnect', ({users}) => {
+
             let userArr = [];
-            for(let user of data.users) {
+            for(let user of users) {
                 userArr.push(user.name);
             }
             this.setState({users: userArr});
         });
 
         socket.on('initialCanvasLoad', (canvas) => {
-            if(!canvas) return;
-
             const currentCanvas = this.canvas.current;
             const ctx = currentCanvas.getContext("2d");
 
@@ -60,7 +57,6 @@ export default class Whiteboard extends Component {
             ctx.canvas.height = currentCanvas.clientHeight;
 
             let imageObj = new Image();
-            console.log("canvas", canvas);
             imageObj.src = canvas;
             imageObj.onload = function() {
               ctx.drawImage(this, 0, 0);
@@ -69,7 +65,7 @@ export default class Whiteboard extends Component {
 
         socket.on('onDraw', (data) => {
             const ctx = this.canvas.current.getContext("2d");
-            this.drawCircle(ctx, data);
+            this.drawLine(ctx, data);
         });
 
         socket.on('onCanvasClear', (data) => {
@@ -79,14 +75,11 @@ export default class Whiteboard extends Component {
 
         socket.on('onClientRescale', (data) => {
             const canvas = this.canvas.current;
-            const mainSection = this.mainSection.current;
-            const currentWidth = mainSection.clientWidth;
-            const currentHeight = mainSection.clientHeight;
-            const prevWidth = data.prevWidth;
-            const prevHeight = data.prevHeight;
-            const scaleX = prevWidth > currentWidth ? prevWidth/currentWidth : currentWidth/prevWidth;
-            const scaleY = prevHeight > currentHeight ? prevHeight/currentHeight : currentHeight/prevHeight;
-           
+            // const currentWidth = canvas.clientWidth;
+            // const currentHeight = canvas.clientHeight;
+            // const {prevWidth, prevHeight} = data;
+            // const scaleX = prevWidth > currentWidth ? currentWidth/prevWidth : prevWidth/currentWidth;
+            // const scaleY = prevHeight > currentHeight ? currentHeight/prevHeight : prevHeight/currentHeight;
             const ctx = canvas.getContext("2d");
             ctx.canvas.width  = canvas.clientWidth;
             ctx.canvas.height = canvas.clientHeight;
@@ -97,7 +90,6 @@ export default class Whiteboard extends Component {
 
             imageObj.src = data.canvas;
             imageObj.onload = function() {
-              //ctx.scale(scaleX, scaleY);
               ctx.clearRect(0, 0, canvas.width, canvas.height);
               ctx.drawImage(this, 0, 0);
             };
@@ -113,6 +105,7 @@ export default class Whiteboard extends Component {
 
         socket.on('disconnect', () => {
             console.log('Disconnected');
+            document.location = '/';
         });
     }
 
@@ -128,10 +121,12 @@ export default class Whiteboard extends Component {
             width: this.state.width,
             toX: to.x || null,
             toY: to.y || null,
-            canvas: [this.canvas.current.toDataURL("image/png")]
+            canvas: this.canvas.current.toDataURL("image/png")
         };
+
         const ctx = this.canvas.current.getContext("2d");
         this.drawLine(ctx, data);
+
         socket.emit('onDraw', data);
     }
 
@@ -139,16 +134,28 @@ export default class Whiteboard extends Component {
 
     drawLine = (context, data) => {
         context.beginPath();
+        const widthGap = ((window.innerWidth - this.whiteboard.current.clientWidth) / 2);
+        // const heightGap = ((window.innerHeight - this.whiteboard.current.clientHeight) / 2);
+        const heightGap = 200;
+        let {x, y, toX, toY, color, width} = data;
+        x -= widthGap;
+        y -= heightGap;
+
+        if(toX != null && toY != null) {
+            toX -= widthGap;
+            toY -= heightGap;
+        }
+
         // Set line coordinates
-        context.moveTo(data.x, data.y);
-        context.lineTo(data.toX ?? data.x, data.toY ?? data.y);
+        context.moveTo(x, y);
+        context.lineTo(toX || x, toY || y);
         // Set line shape
         context.lineJoin="round";
         context.lineCap="round";
         // Set line width and style
-        context.lineWidth = data.width*2;
-        context.strokeStyle = data.color;
-        context.fillStyle = data.color;
+        context.lineWidth = width*2;
+        context.strokeStyle = color;
+        context.fillStyle = color;
         // Draw line
         context.fill();
         context.stroke();
@@ -190,11 +197,11 @@ export default class Whiteboard extends Component {
 
     render() {
         return (
-            <div id="whiteboard">
+            <div ref={this.whiteboard} id="whiteboard">
                 <Fragment>
-                    <main ref={this.mainSection}>
+                    <main>
                         <canvas
-                            style={{ cursor: `url(${this.state.cursor}) ${(this.state.width * 7.5)-7.5} ${(this.state.width * 7.5) -7.5}, auto`}}
+                            style={{ cursor: `url(${this.state.cursor}) ${(this.state.width * 7.5)} ${(this.state.width * 7.5)}, auto`}}
                             onMouseMove={(e) => {
                                 if(this.state.drawing) {
                                     this.draw(e, this.current);

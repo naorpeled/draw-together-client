@@ -17,6 +17,7 @@ export default class Chat extends Component {
 
     componentDidMount() {
         socket.on('onClientConnect', ({messages}) => {
+            if(!messages) return;
             this.setState({messages});
         });
 
@@ -53,15 +54,15 @@ export default class Chat extends Component {
     render() {
         return (
             <div id="chat">
-            <div>
-                {this.state.messages.map((msg, index) => {
-                    return (<Fragment key={'message_' + index}>
-                                <p className="chatMessage">
-                                    [{msg.time}] {msg.author}: {msg.content}
-                                </p>
-                            </Fragment>);
-                })}
-            </div>
+                <div>
+                    {this.state.messages.map((msg, index) => {
+                        return (<Fragment key={'message_' + index}>
+                                    <p className="chatMessage">
+                                        [{msg.time}] {msg.author}: {msg.content}
+                                    </p>
+                                </Fragment>);
+                    })}
+                </div>
             <form onSubmit={(e) => {
                 e.preventDefault();
                 if(this.state.currentMessage) {
