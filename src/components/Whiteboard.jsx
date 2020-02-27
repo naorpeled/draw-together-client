@@ -31,6 +31,10 @@ export default class Whiteboard extends Component {
         const canvas = this.canvas.current;
         const prevWidth = canvas.clientWidth;
         const prevHeight = canvas.clientHeight;
+        const ctx = canvas.getContext("2d");
+
+        ctx.canvas.width = canvas.clientWidth;
+        ctx.canvas.height = canvas.clientHeight;
 
         window.addEventListener('resize', (e) => {
             const data = { prevWidth, prevHeight };
