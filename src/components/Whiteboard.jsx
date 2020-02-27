@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react'
+import ReactDOM from 'react-dom'
 import AppContext from '../context/AppContext'
 import Chat from './Chat';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -15,6 +16,7 @@ export default class Whiteboard extends Component {
         socket = this.context.socket;
         this.canvas = React.createRef();
         this.whiteboard = React.createRef();
+        this.chat = React.createRef();
         this.state = {
             users: [],
             drawing: false,
@@ -91,7 +93,7 @@ export default class Whiteboard extends Component {
             imageObj.src = data.canvas;
             imageObj.onload = function() {
               ctx.clearRect(0, 0, canvas.width, canvas.height);
-              ctx.drawImage(this, 0, 0);
+              ctx.drawImage(this, 0, 0, canvas.clientWidth, canvas.clientHeight);
             };
         });
 
@@ -134,13 +136,15 @@ export default class Whiteboard extends Component {
 
     drawLine = (context, data) => {
         context.beginPath();
-        const widthGap = ((window.innerWidth - this.whiteboard.current.clientWidth) / 2);
-        // const heightGap = ((window.innerHeight - this.whiteboard.current.clientHeight) / 2);
-        const heightGap = 200;
+        // Get the distance from the borders of the window,
+        // basically calculate the current margin/padding
+        const widthGap = ReactDOM.findDOMNode(this.whiteboard.current).getBoundingClientRect().left;
+        const heightGap = ReactDOM.findDOMNode(this.whiteboard.current).getBoundingClientRect().top;
         let {x, y, toX, toY, color, width} = data;
+
+        // Fix the coordinates, according to the gaps
         x -= widthGap;
         y -= heightGap;
-
         if(toX != null && toY != null) {
             toX -= widthGap;
             toY -= heightGap;
@@ -201,7 +205,7 @@ export default class Whiteboard extends Component {
                 <Fragment>
                     <main>
                         <canvas
-                            style={{ cursor: `url(${this.state.cursor}) ${(this.state.width * 7.5)} ${(this.state.width * 7.5)}, auto`}}
+                            style={{ cursor: `url(${this.state.cursor}) ${(this.state.width * 5)} ${(this.state.width * 5)}, auto`}}
                             onMouseMove={(e) => {
                                 if(this.state.drawing) {
                                     this.draw(e, this.current);
@@ -230,7 +234,7 @@ export default class Whiteboard extends Component {
                         <ul>{this.state.users.map((user, index) => <li key={'user'+index}>{user}</li>)}</ul> */}
                         <Chat />
                     </aside>
-                    <footer>
+                    <footer ref={this.chat}>
                         <div className="color blue" onClick={() => this.setColor('blue')}></div>
                         <div className="color red" onClick={() => this.setColor('red')}></div>
                         <div className="color green" onClick={() => this.setColor('green')}></div>
