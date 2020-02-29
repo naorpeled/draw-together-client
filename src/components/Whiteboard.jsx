@@ -88,7 +88,8 @@ export default class Whiteboard extends Component {
     }
 
     componentWillUnmount() {
-        window.removeEventListener('resize');
+        const eventListener = window.getEventListeners(window)["resize"][0].listener;
+        window.removeEventListener("resize", eventListener);
     }
 
     draw = (e, to = {}) => {
