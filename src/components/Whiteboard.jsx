@@ -4,6 +4,7 @@ import AppContext from '../context/AppContext'
 import Chat from './Chat';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrashAlt  } from '@fortawesome/free-solid-svg-icons';
+import ColorPicker from './ColorPicker';
 
 let socket;
 
@@ -227,18 +228,16 @@ export default class Whiteboard extends Component {
                         ></canvas>
                     </main>
                     <aside>
-                        {/* <h2>Users:</h2> 
-                        <ul>{this.state.users.map((user, index) => <li key={'user'+index}>{user}</li>)}</ul> */}
                         <Chat />
                     </aside>
                     <footer ref={this.chat}>
-                        <div className="color black" onClick={() => this.setColor('black')}></div>
-                        <div className="color gray" onClick={() => this.setColor('gray')}></div>
-                        <div className="color blue" onClick={() => this.setColor('blue')}></div>
-                        <div className="color green" onClick={() => this.setColor('green')}></div>
-                        <div className="color red" onClick={() => this.setColor('red')}></div>
-                        <div className="color yellow" onClick={() => this.setColor('#f2eecb')}></div>
-                        <div className="color white" onClick={() => this.setColor('white')}></div>
+                        <ColorPicker color="black" clickListener={this.setColor} />
+                        <ColorPicker color="gray" clickListener={this.setColor} />
+                        <ColorPicker color="blue" clickListener={this.setColor} />
+                        <ColorPicker color="green" clickListener={this.setColor} />
+                        <ColorPicker color="red" clickListener={this.setColor} />
+                        <ColorPicker color="#f2eecb" clickListener={this.setColor} />
+                        <ColorPicker color="white" clickListener={this.setColor} />
                         <input type="range" min="2" max="10" value={this.state.width} onChange={(e) => this.setWidth(e)} />
                         <div className="color clear" onClick={() => this.clearCanvas()}>                  <FontAwesomeIcon
                         color="gray"
