@@ -34,7 +34,6 @@ export default class Whiteboard extends Component {
         ctx.canvas.width = canvas.clientWidth;
         ctx.canvas.height = canvas.clientHeight;
 
-
         window.addEventListener('resize', () => {
             if(socket.connected){
                 socket.emit('onClientRescale');
