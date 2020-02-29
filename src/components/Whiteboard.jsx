@@ -48,14 +48,6 @@ export default class Whiteboard extends Component {
             socket.emit('onClientConnect', this.context.name);
         });
 
-        socket.on('onClientConnect', ({users}) => {
-            let userArr = [];
-            for(let user of users) {
-                userArr.push(user.name);
-            }
-            this.setState({users: userArr});
-        });
-
         socket.on('initialCanvasLoad', (data) => {
             this.loadCanvas(data);
         });
