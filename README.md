@@ -13,7 +13,7 @@ Draw Together is a real-time whiteboard for collaborating and drawing with other
 
 ## 🏃 How to run?
 ### Prerequisites
-- Node.js ([Download](https://nodejs.org/en/)
+- Node.js ([Download](https://nodejs.org/en/))
 
 ### Steps
 1) Download the content of this repository.
