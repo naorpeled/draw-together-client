@@ -16,7 +16,6 @@ export default class Whiteboard extends Component {
 
         socket = this.context.socket;
         this.canvas = React.createRef();
-        this.whiteboard = React.createRef();
         this.chat = React.createRef();
         this.state = {
             users: [],
@@ -76,7 +75,6 @@ export default class Whiteboard extends Component {
 
         socket.on('disconnect', () => {
             console.log('Disconnected');
-            document.location = '/';
         });
     }
 
@@ -109,8 +107,8 @@ export default class Whiteboard extends Component {
         context.beginPath();
         // Get the distance from the borders of the window,
         // basically calculate the current margin/padding
-        const widthGap = ReactDOM.findDOMNode(this.whiteboard.current).getBoundingClientRect().left;
-        const heightGap = ReactDOM.findDOMNode(this.whiteboard.current).getBoundingClientRect().top;
+        const widthGap = ReactDOM.findDOMNode(this.canvas.current).getBoundingClientRect().left;
+        const heightGap = ReactDOM.findDOMNode(this.canvas.current).getBoundingClientRect().top;
         let {x, y, toX, toY, color, width} = data;
 
         // Fix the coordinates, according to the gaps
@@ -191,7 +189,7 @@ export default class Whiteboard extends Component {
 
     render() {
         return (
-            <div ref={this.whiteboard} id="whiteboard">
+            <div id="whiteboard">
                 <Fragment>
                     <main>
                         <canvas
@@ -232,9 +230,9 @@ export default class Whiteboard extends Component {
                         <ColorPicker color="white" clickListener={this.setColor} />
                         <input type="range" min="2" max="10" value={this.state.width} onChange={(e) => this.setWidth(e)} />
                         <div className="color clear" onClick={() => this.clearCanvas()}>                  <FontAwesomeIcon
-                        color="gray"
-                        icon={faTrashAlt}
-                        ></FontAwesomeIcon></div>
+                            color="gray"
+                            icon={faTrashAlt}
+                            ></FontAwesomeIcon></div>
                     </footer>
                 </Fragment>
             </div>

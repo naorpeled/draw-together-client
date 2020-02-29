@@ -28,39 +28,24 @@ body {
     transition: all 0.3s cubic-bezier(.25,.8,.25,1);
 }
 
-#login .logo {
-  display: block;
-  width: 300px;
-  margin: 10px auto;
-}
+#login .logo { display: block; width: 300px; margin: 10px auto; }
 
-#login-form {
-    text-align: center;
-    display: grid;
-}
+#login-form { text-align: center; display: grid; }
 
-#login-form > * {
-    padding: 10px;
-    margin: 2px;
-    border-radius: 5px;
-}
+#login-form > * { padding: 10px; margin: 2px; border-radius: 5px; }
 
-#login-form > h1 {
-    font-size: 40px;
-}
+#login-form > h1 { font-size: 40px; }
 
-#login-form > span {
-    font-size: 24px;
-}
+#login-form > span { font-size: 24px; }
 
 /* Whiteboard page - Whiteboard.jsx */
 
 #whiteboard {
     margin: 100px 250px;
     background-color: white;
-    display:grid;
+    display: grid;
     height: 80vh;
-    grid-template-columns:2fr 1fr;
+    grid-template-columns: 2fr 1fr;
     grid-template-areas:"main     sidebar"
                         "main     sidebar"
                         "main     sidebar"
@@ -69,18 +54,11 @@ body {
     transition: all 0.3s cubic-bezier(.25,.8,.25,1);
 }
 
-#whiteboard main { 
-    grid-area:main;
-}
+#whiteboard main { grid-area:main; }
 
-#whiteboard aside {
-    grid-area:sidebar;
-    height: 100%;
-    overflow-y: scroll;
-}
-#whiteboard footer { 
-    grid-area:footer; 
-}
+#whiteboard aside { grid-area:sidebar; height: 100%; overflow-y: scroll; }
+
+#whiteboard footer { grid-area:footer; }
 
 #whiteboard canvas {
     background-color: #f2eecb;
@@ -90,7 +68,7 @@ body {
     max-height: 100%;
 }
 
-/* Whiteboard component - Chat.jsx */
+/* Whiteboard page - Chat.jsx */
 
 #chat {
     position: relative;
@@ -123,19 +101,18 @@ body {
     bottom: 0;
 }
 
-#chat form {
-    margin-top: 40px;
-    margin-bottom: 10px;
-    position: relative;
-}
+#chat form { margin-top: 40px; margin-bottom: 10px; position: relative; }
 
-footer {
-    background-color: #4d4646;
-}
+aside { background-color: #333333; }
 
-aside {
-    background-color: #333333;
-}
+/* Whiteboard page - footer */
+
+footer { background-color: #4d4646; }
+
+footer > input { margin-left: 20px; }
+
+footer { display: flex; justify-content: center; align-items: center; }
+
 
 /* General */
 
@@ -148,18 +125,11 @@ button {
     transition: all 0.3s cubic-bezier(.25,.8,.25,1);
 }
 
-button:hover {
-    background-color: #585858;
-}
+button:hover { background-color: #585858; }
 
-button:active {
-    box-shadow: 0 1px #585858;
-    transform: translateY(1px);
-}
+button:active { box-shadow: 0 1px #585858; transform: translateY(1px); }
 
-*:focus {
-    outline: none;
-}
+*:focus { outline: none; }
 
 .link {
     font-size: 0.75em;
@@ -168,19 +138,11 @@ button:active {
     color: black;
 }
 
-.left {
-    float: left;
-}
+.left { float: left; }
 
-.right {
-    float: right;
-}
+.right { float: right; }
 
-.error {
-    color: #c02739;
-    text-align: center;
-    display: block;
-}
+.error { color: #c02739; text-align: center; display: block; }
 
 .color {
     display: inline-block;
@@ -189,13 +151,4 @@ button:active {
     cursor: pointer;
 }
 
-footer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.clear {
-    text-align: center;
-    padding-top: 35px;
-    font-size: 30px;
-}
+.clear { text-align: center; padding-top: 35px; font-size: 30px; }
