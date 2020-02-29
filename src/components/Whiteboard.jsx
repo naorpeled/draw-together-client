@@ -68,7 +68,6 @@ export default class Whiteboard extends Component {
         });
 
         socket.on('onClientRescale', (data) => {
-            console.log(data);
             this.loadCanvas(data);
         });
 
@@ -146,7 +145,7 @@ export default class Whiteboard extends Component {
         const ctx = canvas.getContext("2d");
         ctx.canvas.width  = canvas.clientWidth;
         ctx.canvas.height = canvas.clientHeight;
-
+        
         let imageObj = new Image();
 
         imageObj.src = data.canvas;
