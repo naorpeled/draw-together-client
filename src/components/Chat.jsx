@@ -24,7 +24,6 @@ export default class Chat extends Component {
         socket.on('onChatMessage', (data) => {
             this.appendChatMessage(data);
         });
-
     }
 
     appendChatMessage(data) {
@@ -48,7 +47,9 @@ export default class Chat extends Component {
         }
         this.appendChatMessage(data);
         this.setState({currentMessage: ''});
-        socket.emit('onChatMessage', data);
+        if(socket.connected) {
+            socket.emit('onChatMessage', data);
+        }
     }
 
     render() {

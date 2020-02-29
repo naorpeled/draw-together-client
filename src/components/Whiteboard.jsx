@@ -31,12 +31,16 @@ export default class Whiteboard extends Component {
         // Rescale the canvas
         const canvas = this.canvas.current;
         const ctx = canvas.getContext("2d");
-        
         ctx.canvas.width = canvas.clientWidth;
         ctx.canvas.height = canvas.clientHeight;
 
+
         window.addEventListener('resize', () => {
-            socket.emit('onClientRescale');
+            if(socket.connected){
+                socket.emit('onClientRescale');
+                return;
+            }
+            this.loadCanvas(canvas.toDataURL('image/png'));
         });
 
         socket.on('connect', () => {
@@ -45,7 +49,6 @@ export default class Whiteboard extends Component {
         });
 
         socket.on('onClientConnect', ({users}) => {
-
             let userArr = [];
             for(let user of users) {
                 userArr.push(user.name);
@@ -53,8 +56,8 @@ export default class Whiteboard extends Component {
             this.setState({users: userArr});
         });
 
-        socket.on('initialCanvasLoad', (canvas) => {
-            this.loadCanvas(canvas);
+        socket.on('initialCanvasLoad', (data) => {
+            this.loadCanvas(data);
         });
 
         socket.on('onDraw', (data) => {
@@ -102,8 +105,9 @@ export default class Whiteboard extends Component {
 
         const ctx = this.canvas.current.getContext("2d");
         this.drawLine(ctx, data);
-
-        socket.emit('onDraw', data);
+        if(socket.connected) {
+            socket.emit('onDraw', data);
+        }
     }
 
     // Canvas utilities
@@ -143,12 +147,14 @@ export default class Whiteboard extends Component {
     loadCanvas = (data) => {
         const canvas = this.canvas.current;
         const ctx = canvas.getContext("2d");
+        // Scale the canvas
         ctx.canvas.width  = canvas.clientWidth;
         ctx.canvas.height = canvas.clientHeight;
-        
-        let imageObj = new Image();
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
 
-        imageObj.src = data.canvas;
+        let imageObj = new Image();
+        imageObj.src = data;
         imageObj.onload = function() {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(this, 0, 0, canvas.clientWidth, canvas.clientHeight);
@@ -185,7 +191,9 @@ export default class Whiteboard extends Component {
     clearCanvas = () => {
         const ref = this.canvas.current;
         ref.getContext("2d").clearRect(0, 0, ref.width, ref.height);
-        socket.emit('onCanvasClear');
+        if(socket.connected){
+            socket.emit('onCanvasClear');
+        }
     }
 
     render() {
