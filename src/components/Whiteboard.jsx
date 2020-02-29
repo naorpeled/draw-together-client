@@ -232,11 +232,13 @@ export default class Whiteboard extends Component {
                         <Chat />
                     </aside>
                     <footer ref={this.chat}>
-                        <div className="color blue" onClick={() => this.setColor('blue')}></div>
-                        <div className="color red" onClick={() => this.setColor('red')}></div>
-                        <div className="color green" onClick={() => this.setColor('green')}></div>
-                        <div className="color gray" onClick={() => this.setColor('gray')}></div>
                         <div className="color black" onClick={() => this.setColor('black')}></div>
+                        <div className="color gray" onClick={() => this.setColor('gray')}></div>
+                        <div className="color blue" onClick={() => this.setColor('blue')}></div>
+                        <div className="color green" onClick={() => this.setColor('green')}></div>
+                        <div className="color red" onClick={() => this.setColor('red')}></div>
+                        <div className="color yellow" onClick={() => this.setColor('#f2eecb')}></div>
+                        <div className="color white" onClick={() => this.setColor('white')}></div>
                         <input type="range" min="2" max="10" value={this.state.width} onChange={(e) => this.setWidth(e)} />
                         <div className="color clear" onClick={() => this.clearCanvas()}>                  <FontAwesomeIcon
                         color="gray"

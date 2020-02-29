@@ -202,6 +202,15 @@ button:active {
 .black {
     background-color: black;
 }
+
+.white {
+    background-color: white;
+}
+
+.yellow {
+    background-color: #f2eecb;
+}
+
 footer {
     display: flex;
     justify-content: center;
