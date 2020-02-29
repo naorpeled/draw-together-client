@@ -28,17 +28,15 @@ export default class Whiteboard extends Component {
     }
 
     componentDidMount() {
+        // Rescale the canvas
         const canvas = this.canvas.current;
-        const prevWidth = canvas.clientWidth;
-        const prevHeight = canvas.clientHeight;
         const ctx = canvas.getContext("2d");
-
+        
         ctx.canvas.width = canvas.clientWidth;
         ctx.canvas.height = canvas.clientHeight;
 
-        window.addEventListener('resize', (e) => {
-            const data = { prevWidth, prevHeight };
-            socket.emit('onClientRescale', data);
+        window.addEventListener('resize', () => {
+            socket.emit('onClientRescale');
         });
 
         socket.on('connect', () => {
@@ -56,17 +54,7 @@ export default class Whiteboard extends Component {
         });
 
         socket.on('initialCanvasLoad', (canvas) => {
-            const currentCanvas = this.canvas.current;
-            const ctx = currentCanvas.getContext("2d");
-
-            ctx.canvas.width = currentCanvas.clientWidth;
-            ctx.canvas.height = currentCanvas.clientHeight;
-
-            let imageObj = new Image();
-            imageObj.src = canvas;
-            imageObj.onload = function() {
-              ctx.drawImage(this, 0, 0);
-            };
+            this.loadCanvas(canvas);
         });
 
         socket.on('onDraw', (data) => {
@@ -80,25 +68,8 @@ export default class Whiteboard extends Component {
         });
 
         socket.on('onClientRescale', (data) => {
-            const canvas = this.canvas.current;
-            // const currentWidth = canvas.clientWidth;
-            // const currentHeight = canvas.clientHeight;
-            // const {prevWidth, prevHeight} = data;
-            // const scaleX = prevWidth > currentWidth ? currentWidth/prevWidth : prevWidth/currentWidth;
-            // const scaleY = prevHeight > currentHeight ? currentHeight/prevHeight : prevHeight/currentHeight;
-            const ctx = canvas.getContext("2d");
-            ctx.canvas.width  = canvas.clientWidth;
-            ctx.canvas.height = canvas.clientHeight;
-            canvas.width = canvas.clientWidth;
-            canvas.height = canvas.clientHeight;
-
-            let imageObj = new Image();
-
-            imageObj.src = data.canvas;
-            imageObj.onload = function() {
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
-              ctx.drawImage(this, 0, 0, canvas.clientWidth, canvas.clientHeight);
-            };
+            console.log(data);
+            this.loadCanvas(data);
         });
 
         socket.on('onClientDisconnect', (users) => {
@@ -168,6 +139,21 @@ export default class Whiteboard extends Component {
         context.fill();
         context.stroke();
         context.closePath();
+    }
+
+    loadCanvas = (data) => {
+        const canvas = this.canvas.current;
+        const ctx = canvas.getContext("2d");
+        ctx.canvas.width  = canvas.clientWidth;
+        ctx.canvas.height = canvas.clientHeight;
+
+        let imageObj = new Image();
+
+        imageObj.src = data.canvas;
+        imageObj.onload = function() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(this, 0, 0, canvas.clientWidth, canvas.clientHeight);
+        };
     }
 
     getNewCursorDataURL = (width, color) => {
