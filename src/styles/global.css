@@ -56,10 +56,10 @@ body {
 /* Whiteboard page - Whiteboard.jsx */
 
 #whiteboard {
-    margin: 200px;
+    margin: 100px 250px;
     background-color: white;
     display:grid;
-    height: 100vh;
+    height: 80vh;
     grid-template-columns:2fr 1fr;
     grid-template-areas:"main     sidebar"
                         "main     sidebar"
