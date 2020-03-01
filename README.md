@@ -11,6 +11,10 @@ Draw Together is a real-time whiteboard for collaborating and drawing with other
 - Express
 - Socket.io
 
+## 🤔 Conclusions from this project
+- Don't rescale a canvas when using sockets, because people usually have screens with different sizes.
+- When adding a margin to a canvas, you have to calculate the distance between the dot that you're trying to draw and the window's border because canvas' coordinates are not related to the window's coordinates.
+
 ## 🏃 How to run?
 ### Prerequisites
 - Node.js ([Download](https://nodejs.org/en/))
